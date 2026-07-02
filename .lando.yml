@@ -2,3 +2,9 @@ name: 36beech-php-api
 recipe: lamp
 config:
   webroot: ./docroot
+  php: '8.2'
+  config:
+    php: php.ini
+services:
+  phpmyadmin:
+    type: phpmyadmin
