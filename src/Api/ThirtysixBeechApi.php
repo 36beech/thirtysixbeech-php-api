@@ -55,7 +55,11 @@ class ThirtysixBeechApi
   }
 
   private function matchPath(string $pattern, string $path): array|false
-{
+  {
+    $pattern = trim( $pattern, "/" );
+    $path = trim( $path, "/" );
+    error_log( print_r( ["pattern" => $pattern, "path" => $path], true ) );
+
     $regex = preg_replace('/:([a-zA-Z_][a-zA-Z0-9_]*)/', '(?P<$1>[^/]+)', $pattern);
     $regex = '#^' . $regex . '$#';
 
@@ -64,5 +68,5 @@ class ThirtysixBeechApi
     }
 
     return array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
-}
+  }
 }

@@ -6,7 +6,7 @@ $config = require __DIR__ . '/../config/config.php';
 $api = new ThirtysixBeechApi( $config );
 
 function test_callback($params) {
-  return array("message"=>"CHEESE!");
+  return array("message"=>"CHEESE!", "params" => $params);
 }
 
 function another_callback() {
@@ -22,5 +22,5 @@ function get_birds(array $params, ?PDO $db): array
 
 $api->new_endpoint('/', 'GET', 'another_callback', false);
 $api->new_endpoint('/birds', 'GET', 'get_birds');
-$api->new_endpoint('/this/is/the/path/', 'GET', 'test_callback', false);
+$api->new_endpoint('/this/is/the/path', 'GET', 'test_callback', false);
 
