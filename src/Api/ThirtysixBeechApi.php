@@ -9,41 +9,60 @@ use ThirtysixBeechApi\Controllers\ItemsController;
 use ThirtysixBeechApi\Middleware\AuthMiddleware;
 use ThirtysixBeechApi\Response\JsonResponse;
 
+use PDO;
+
 class ThirtysixBeechApi
 {
-  private readonly array $path;
-  private readonly object $db;
-  private readonly TokenManager $tokenManager;
-  private readonly AuthMiddleware $authMiddleware;
+  private ?PDO $db = null;
+  private ?TokenManager $auth = null;
 
   public function __construct(
-    private readonly string $method,
-    string $path,
-    private readonly array $db_config,
-    private readonly array $auth
-  ) {
-    if ($method === 'OPTIONS') {
-      http_response_code(204);
-      exit;
-    }
+    private readonly array $config
+  ) {}
 
-    $this->path = explode("/", trim($path, '/'));
-
-    $this->db = Connection::getInstance($db_config);
-    if( ! empty( $auth ) ) :
-      $this->tokenManager = new TokenManager($auth['token_secret'], $auth['token_ttl']);
-      $this->authMiddleware = new AuthMiddleware($this->tokenManager);
+  public function getDb(): PDO
+  {
+    if ($this->db === null) :
+      if (!isset($this->config['db'])) :
+        JsonResponse::error('Database not configured.', 503);
+      endif;
+      $this->db = Connection::getInstance($this->config['db']);
     endif;
 
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization');
-    header('Content-Type: application/json; charset=utf-8');
+    return $this->db;
   }
 
-  public function new_endpoint(callable $callback)
+  public function new_endpoint(string $endpoint, string $endpoint_method, callable $callback, bool $db_required = true, bool $auth_required = false)
   {
-    $result = $callback();
-    echo json_encode($this->db);
+    $method = $_SERVER['REQUEST_METHOD'] ?? null;
+    $path   = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    
+    if ($method !== strtoupper($endpoint_method)) {
+        return;
+    }
+
+    $params = $this->matchPath($endpoint, $path);
+    if ($params === false) {
+        return;
+    }
+
+    if( $db_required ) :
+      $db = $this->getDb();
+    endif;
+
+    $data = $callback($params, $db ?? null);
+    JsonResponse::success($data);
   }
+
+  private function matchPath(string $pattern, string $path): array|false
+{
+    $regex = preg_replace('/:([a-zA-Z_][a-zA-Z0-9_]*)/', '(?P<$1>[^/]+)', $pattern);
+    $regex = '#^' . $regex . '$#';
+
+    if (!preg_match($regex, $path, $matches)) {
+        return false;
+    }
+
+    return array_filter($matches, 'is_string', ARRAY_FILTER_USE_KEY);
+}
 }

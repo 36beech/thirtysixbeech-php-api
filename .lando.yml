@@ -1,4 +1,4 @@
-name: 36beech-php-api
+name: thirtysixbeech-php-api
 recipe: lamp
 config:
   webroot: ./docroot

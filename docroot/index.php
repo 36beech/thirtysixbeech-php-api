@@ -2,22 +2,25 @@
 require_once __DIR__ . '/../vendor/autoload.php';
 use ThirtysixBeechApi\Api\ThirtysixBeechApi;
 
+$config = require __DIR__ . '/../config/config.php';
+$api = new ThirtysixBeechApi( $config );
 
-['db' => $db, 'auth' => $auth] = require __DIR__ . '/../config/config.php';
-$method = $_SERVER['REQUEST_METHOD'] ?? null;
-$path   = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-// $path   = '/' . trim($path, '/');
-$api = new ThirtysixBeechApi( $method, $path, $db, $auth );
-error_log(print_r($api, true));
-
-function test_callback() {
+function test_callback($params) {
   return array("message"=>"CHEESE!");
 }
 
-$api->new_endpoint('test_callback');
+function another_callback() {
+  return array("message"=>"This is the default");
+}
 
-/*
-    $this->db = Connection::getInstance($db_config);
-    $this->tokenManager = new TokenManager($auth['token_secret'], $auth['token_ttl']);
-    $this->authMiddleware = new AuthMiddleware($this->tokenManager);
-    */
+function get_birds(array $params, ?PDO $db): array
+{
+  $sql = "SELECT * FROM `species` ORDER BY `species`.`common_name` ASC LIMIT 5";
+  $stmt = $db->query($sql);
+  return $stmt->fetchAll();
+}
+
+$api->new_endpoint('/', 'GET', 'another_callback', false);
+$api->new_endpoint('/birds', 'GET', 'get_birds');
+$api->new_endpoint('/this/is/the/path/', 'GET', 'test_callback', false);
+
