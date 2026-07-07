@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 
-const BASE_URL = 'https://localhost:62565'; // adjust to your Lando env
+const BASE_URL = 'https://localhost:52297'; // adjust to your Lando env
 
 export const useApi = () => {
   const [data, setData] = useState(null);

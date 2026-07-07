@@ -11,7 +11,7 @@ use ThirtysixBeechApi\Api\ThirtysixBeechApi;
 $config = require __DIR__ . '/../config/config.php';
 $api = new ThirtysixBeechApi( $config );
 
-function test_callback($params) {
+function test_callback($args) {
   return array("message"=>"CHEESE!", "params" => $params);
 }
 
@@ -19,22 +19,25 @@ function another_callback() {
   return array("message"=>"This is the default");
 }
 
-function get_birds(array $params, ?PDO $db): array
+function get_birds(array $args): array
 {
   $sql = "SELECT * FROM `species` ORDER BY `species`.`common_name` ASC LIMIT 5";
-  $stmt = $db->query($sql);
+  $stmt = $args['db']->query($sql);
   return $stmt->fetchAll();
 }
 
-function get_families(array $params, ?PDO $db): array
+function get_families(array $args): array
 {
   $sql = "SELECT * FROM `families` ORDER BY `common_name`";
-  $stmt = $db->query($sql);
+  $stmt = $args['db']->query($sql);
   return $stmt->fetchAll();
 }
 
-function get_bird(array $params, ?PDO $db): array
+function get_bird(array $args): array
 {
+  $params = $args['params'];
+  $db = $args['db'];
+
   if( empty( $params['species'] ) ):
     return array('No species specified');
   endif;

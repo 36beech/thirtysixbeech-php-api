@@ -31,6 +31,7 @@ class ThirtysixBeechApi
     if (isset($this->config['auth'])) {
       error_log("AUTH");
       $this->new_endpoint('/auth/login', 'POST', [$this, 'handleLogin'], db_required: false);
+      error_log("new_endpoint should have fired");
     }
   }
 
@@ -90,6 +91,7 @@ class ThirtysixBeechApi
   {
     $raw  = file_get_contents('php://input');
     $body = json_decode($raw, true);
+    error_log(print_r($body,true));
 
     $pin = $body['pin'] ?? '';
 
@@ -145,6 +147,7 @@ class ThirtysixBeechApi
   {
     $method = $_SERVER['REQUEST_METHOD'] ?? null;
     $path   = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+    $args = array();
 
     if ($method !== strtoupper($endpoint_method)) {
       return;
@@ -155,15 +158,19 @@ class ThirtysixBeechApi
       return;
     }
 
+    $args['params'] = $params;
+
     if ($db_required) :
       $db = $this->getDb();
     endif;
 
-    if ($auth_required) {
-      $this->getMiddleware()->guard();
-    }
+    $args['db'] = $db ?? null;
 
-    $data = $callback($params, $db ?? null);
+    // if ($auth_required) {
+    //   $this->getMiddleware()->guard();
+    // }
+
+    $data = $callback($args);
     JsonResponse::success($data);
   }
 
