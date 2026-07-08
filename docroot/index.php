@@ -69,7 +69,10 @@ function get_bird(array $args): array
 
 function add_birds(array $args): array
 {
+  $raw  = file_get_contents('php://input');
+  $body = json_decode($raw, true);
 
+  return $body;
 }
 
 $api->new_endpoint('/', 'GET', 'another_callback', false);

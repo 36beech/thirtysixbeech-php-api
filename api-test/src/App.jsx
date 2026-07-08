@@ -18,6 +18,10 @@ function App() {
     setToken(newToken);
   };
 
+  const handleAddBird = (newBird) => {
+
+  }
+
   return (
     <>
       <h1 className="bg-amber-500 text-center p-4">API Tester</h1>
@@ -26,7 +30,7 @@ function App() {
         {token && (
           <>
             <code className="text-xs bg-amber-700 p-2 text-white rounded-sm my-4 inline-block">{token}</code>
-            {birds?.data?.length > 0 && <AddBird token={token} />}
+            {birds?.data?.length > 0 && <AddBird onAddBird={handleAddBird} token={token} />}
           </>
         )}
 

@@ -91,7 +91,6 @@ class ThirtysixBeechApi
   {
     $raw  = file_get_contents('php://input');
     $body = json_decode($raw, true);
-    error_log(print_r($body,true));
 
     $pin = $body['pin'] ?? '';
 
