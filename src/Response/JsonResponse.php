@@ -16,7 +16,8 @@ class JsonResponse
     public static function send(mixed $data, int $status = 200): never
     {
         http_response_code($status);
-        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $response = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        echo $response;
         exit;
     }
 

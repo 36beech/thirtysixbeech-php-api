@@ -10,13 +10,16 @@ export const Login = ({ onLogin }) => {
 
   const handleSubmit = () => {
     post("/auth/login", { pin: pwinput }).then((result) => {
-      console.log(result);
-    });
+      onLogin(result);
+    }).catch((error) => console.log(error));
   };
+  if( loading ) return <p className="text-center">Logging in</p>
   return (
     <>
-      <Input type="password" value={pwinput} onChange={(e) => setPwinput(e.target.value)} />
-      <Button type="button" onClick={handleSubmit}>Log in</Button>
+      <Input type="password" value={pwinput} onChange={(e) => setPwinput(e.target.value)} maxLength={6} />
+      <Button type="button" onClick={handleSubmit}>
+        Log in
+      </Button>
     </>
   );
 };

@@ -21,7 +21,7 @@ function another_callback() {
 
 function get_birds(array $args): array
 {
-  $sql = "SELECT * FROM `species` ORDER BY `species`.`common_name` ASC LIMIT 5";
+  $sql = "SELECT * FROM `species` ORDER BY `species`.`common_name` ASC LIMIT 50";
   $stmt = $args['db']->query($sql);
   return $stmt->fetchAll();
 }
@@ -67,8 +67,14 @@ function get_bird(array $args): array
   return $stmt->fetchAll();
 }
 
+function add_birds(array $args): array
+{
+
+}
+
 $api->new_endpoint('/', 'GET', 'another_callback', false);
 $api->new_endpoint('/birds', 'GET', 'get_birds');
+$api->new_endpoint('/birds', 'POST', 'add_birds', $auth_required = true);
 $api->new_endpoint('/families', 'GET', 'get_families');
 $api->new_endpoint('/birds/:species', 'GET', 'get_bird');
 $api->new_endpoint('/this/is/the/path', 'GET', 'test_callback', false);
