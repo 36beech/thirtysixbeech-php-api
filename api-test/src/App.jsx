@@ -8,9 +8,11 @@ function App() {
   const { get, loading, error } = useApi();
   const [birds, setBirds] = useState([]);
   const [token, setToken] = useState(null);
-  console.log(birds);
+
+  console.log("Birds",birds);
+
   useEffect(() => {
-    get("/birds").then((newBirds) => setBirds(newBirds));
+    get("/birds").then((newBirds) => setBirds(newBirds?.data ?? []));
   }, [get]);
 
   const handleLogin = (result) => {
@@ -19,7 +21,8 @@ function App() {
   };
 
   const handleAddBird = (newBird) => {
-
+    const newBirds = [...birds, newBird].sort((a, b) => a.common_name > b.common_name);
+    setBirds(newBirds);
   }
 
   return (
@@ -30,14 +33,14 @@ function App() {
         {token && (
           <>
             <code className="text-xs bg-amber-700 p-2 text-white rounded-sm my-4 inline-block">{token}</code>
-            {birds?.data?.length > 0 && <AddBird onAddBird={handleAddBird} token={token} />}
+            {birds?.length > 0 && <AddBird onAddBird={handleAddBird} token={token} />}
           </>
         )}
 
         {loading && <p>Loading</p>}
-        {birds?.data?.length > 0 && (
+        {birds?.length > 0 && (
           <ul className="columns-3 my-10">
-            {birds.data.map((bird) => (
+            {birds.map((bird) => (
               <li key={bird.id}>{bird.common_name}</li>
             ))}
           </ul>

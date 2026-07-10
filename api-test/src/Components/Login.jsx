@@ -11,6 +11,7 @@ export const Login = ({ onLogin }) => {
   const handleSubmit = () => {
     post("/auth/login", { pin: pwinput }).then((result) => {
       onLogin(result);
+      console.log(result);
     }).catch((error) => console.log(error));
   };
   if( loading ) return <p className="text-center">Logging in</p>

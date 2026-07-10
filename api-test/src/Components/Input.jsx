@@ -5,11 +5,15 @@ export const Input = (props) => {
 };
 
 export const Select = (props) => {
-  const {options} = props;
-  console.log('Select', props);
+  const {options, onChange} = props;
+
+  const handleSelectChange = (e) => {
+    onChange(e.target.value);
+  }
+
   return (
-    <select {...props} className={inputClasses}>
-      <option>Select a family</option>
+    <select {...props} onChange={handleSelectChange} className={inputClasses}>
+      <option value={0}>Select a family</option>
       {options.map((option) => <option value={option.value}>{option.label}</option>)}
     </select>
   );

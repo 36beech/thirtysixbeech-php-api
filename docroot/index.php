@@ -1,27 +1,30 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
+
 use ThirtysixBeechApi\Api\ThirtysixBeechApi;
 
-        
-        header('Access-Control-Allow-Origin: http://localhost:5173');
-        header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
-        header('Access-Control-Allow-Headers: Content-Type, Authorization');
-        header('Content-Type: application/json; charset=utf-8');
+
+header('Access-Control-Allow-Origin: http://localhost:5173');
+header('Access-Control-Allow-Methods: GET, POST, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
+header('Content-Type: application/json; charset=utf-8');
 
 $config = require __DIR__ . '/../config/config.php';
-$api = new ThirtysixBeechApi( $config );
+$api = new ThirtysixBeechApi($config);
 
-function test_callback($args) {
-  return array("message"=>"CHEESE!", "params" => $params);
+function test_callback($args)
+{
+  return array("message" => "CHEESE!", "params" => $params);
 }
 
-function another_callback() {
-  return array("message"=>"This is the default");
+function another_callback()
+{
+  return array("message" => "This is the default");
 }
 
 function get_birds(array $args): array
 {
-  $sql = "SELECT * FROM `species` ORDER BY `species`.`common_name` ASC LIMIT 50";
+  $sql = "SELECT * FROM `species` ORDER BY `species`.`common_name` ASC LIMIT 51";
   $stmt = $args['db']->query($sql);
   return $stmt->fetchAll();
 }
@@ -38,7 +41,7 @@ function get_bird(array $args): array
   $params = $args['params'];
   $db = $args['db'];
 
-  if( empty( $params['species'] ) ):
+  if (empty($params['species'])):
     return array('No species specified');
   endif;
 
@@ -59,10 +62,10 @@ function get_bird(array $args): array
   FROM `species`, `families` 
   WHERE `species`.`id` = :id AND `species`.`family_id` = `families`.`id`
   ";
-  $stmt = $db->prepare( $sql );
-  $stmt->execute( array(
+  $stmt = $db->prepare($sql);
+  $stmt->execute(array(
     ':id' => $params['species']
-  ) );
+  ));
 
   return $stmt->fetchAll();
 }
@@ -71,8 +74,31 @@ function add_birds(array $args): array
 {
   $raw  = file_get_contents('php://input');
   $body = json_decode($raw, true);
+  $db = $args['db'];
 
-  return $body;
+  $stmt = $db->prepare("
+        INSERT INTO `species` 
+            (`family_id`, `common_name`, `scientific_name`, `conservation_status`, `avg_wingspan_cm`, `avg_weight_g`, `migratory`, `habitat`) 
+        VALUES 
+            (:family_id, :common_name, :scientific_name, :conservation_status, :avg_wingspan_cm, :avg_weight_g, :migratory, :habitat)
+    ");
+
+  $stmt->execute([
+    ':family_id'           => $body['family_id'],
+    ':common_name'         => $body['common_name'],
+    ':scientific_name'     => $body['scientific_name'],
+    ':conservation_status' => $body['conservation_status'],
+    ':avg_wingspan_cm'     => $body['avg_wingspan_cm'],
+    ':avg_weight_g'        => $body['avg_weight_g'],
+    ':migratory'           => $body['migratory'],
+    ':habitat'             => $body['habitat'],
+  ]);
+
+  $newId = (int) $db->lastInsertId();
+
+  $stmt = $db->prepare("SELECT * FROM `species` WHERE `id` = :id");
+  $stmt->execute([':id' => $newId]);
+  return $stmt->fetch() ?: [];
 }
 
 $api->new_endpoint('/', 'GET', 'another_callback', false);
@@ -81,4 +107,3 @@ $api->new_endpoint('/birds', 'POST', 'add_birds', $auth_required = true);
 $api->new_endpoint('/families', 'GET', 'get_families');
 $api->new_endpoint('/birds/:species', 'GET', 'get_bird');
 $api->new_endpoint('/this/is/the/path', 'GET', 'test_callback', false);
-
